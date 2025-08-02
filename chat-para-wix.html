@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Widget</title>
+    
+    <!-- 1. Enlace a la hoja de estilos (CSS) -->
+    <!-- DEBES SUBIR styles.css A UN HOSTING Y REEMPLAZAR ESTA URL -->
+    <link rel="stylesheet" href="URL_PARA_TU_STYLES.CSS">
+
+    <!-- Opcional: Fuentes de Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Estructura HTML del Chat Widget -->
+    <div id="chat-widget-container">
+        <div id="chat-popup">
+            <div id="chat-header">
+                <div id="chat-title">Asistente Virtual</div>
+                <button id="close-chat-btn">&times;</button>
+            </div>
+            <ul id="messages"></ul>
+            <div id="typing-indicator" class="hidden">
+                <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            </div>
+            <form id="message-form">
+                <input type="text" id="message-input" placeholder="Escribe un mensaje...">
+                <button type="submit" id="send-button" aria-label="Enviar mensaje">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+                    </svg>
+                </button>
+            </form>
+        </div>
+        <button id="open-chat-btn" aria-label="Abrir chat">
+            <svg xmlns="http://www.w3.org/2000/svg" height="28" viewBox="0 0 24 24" width="28" fill="white">
+                <path d="M0 0h24v24H0V0z" fill="none"/>
+                <path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- 2. Enlace al archivo JavaScript -->
+    <!-- DEBES SUBIR script.js A UN HOSTING Y REEMPLAZAR ESTA URL -->
+    <script src="URL_PARA_TU_SCRIPT.JS"></script>
+
+</body>
+</html>
