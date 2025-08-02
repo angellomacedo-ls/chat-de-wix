@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 1. Define tus webhooks de producción y de prueba
     const n8nWebhookUrl_PROD = 'https://angellomacedo.app.n8n.cloud/webhook/7121dfe8-1a50-4c64-b1ea-90465e913322';
-    const n8nWebhookUrl_TEST = 'URL_DE_PRUEBAS_AQUÍ'; // <--- Reemplaza esto con tu webhook de n8n para pruebas
+    const n8nWebhookUrl_TEST = 'https://angellomacedo.app.n8n.cloud/webhook-test/7121dfe8-1a50-4c64-b1ea-90465e913322'; // <--- Reemplaza esto con tu webhook de n8n para pruebas
 
     // 2. Detecta automáticamente el entorno
     const isTestEnvironment = window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1');
