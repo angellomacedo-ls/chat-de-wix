@@ -124,7 +124,15 @@ document.addEventListener('DOMContentLoaded', () => {
             addMessageToHistory(botMessage, MESSAGE_SENDER.BOT);
 
         } catch (error) {
-            console.error('Communication with n8n failed:', error);
+            console.error('Error al comunicar con el webhook:', error);
+
+            // Intentamos leer el cuerpo de la respuesta aunque haya un error
+            if (error.response) {
+                error.response.text().then(text => {
+                    console.error('Respuesta del servidor (texto):', text);
+                });
+            }
+            
             const errorMessage = 'Lo siento, no pude conectarme con el asistente en este momento. Por favor, inténtalo de nuevo más tarde.';
             addMessageToHistory(errorMessage, MESSAGE_SENDER.BOT);
         } finally {
