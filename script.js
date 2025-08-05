@@ -77,34 +77,32 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const extractBotMessage = (responseData) => {
-        // Intenta parsear la respuesta si es un string JSON
-        let data = responseData;
-        if (typeof data === 'string') {
-            try {
-                data = JSON.parse(data);
-            } catch (e) {
-                // Si no es un JSON válido, devuelve el texto tal cual
-                return responseData;
+        // Prioridad 1: Buscar una propiedad 'reply' o 'text' o 'output' en el objeto principal.
+        if (responseData && typeof responseData === 'object') {
+            if (responseData.reply) return responseData.reply;
+            if (responseData.text) return responseData.text;
+            if (responseData.output) return responseData.output;
+        }
+
+        // Prioridad 2: Si es un array, buscar en el primer elemento.
+        if (Array.isArray(responseData) && responseData.length > 0) {
+            const firstItem = responseData[0];
+            if (firstItem && typeof firstItem === 'object') {
+                if (firstItem.reply) return firstItem.reply;
+                if (firstItem.text) return firstItem.text;
+                if (firstItem.output) return firstItem.output;
+                if (firstItem.Respuesta) return firstItem.Respuesta; // Para compatibilidad con versiones anteriores
+                if (firstItem.body && firstItem.body.Respuesta) return firstItem.body.Respuesta; // Para compatibilidad
             }
         }
 
-        if (Array.isArray(data) && data.length > 0) {
-            // Busca la propiedad 'Respuesta' en el primer objeto del array
-            if(data[0].body && data[0].body.Respuesta) {
-                return data[0].body.Respuesta;
-            }
-            // Fallback a otras posibles estructuras
-            return data[0].Respuesta || JSON.stringify(data[0]);
+        // Si todo lo demás falla, convierte la respuesta a un string para depuración.
+        if (typeof responseData === 'object') {
+            return JSON.stringify(responseData);
         }
-        if (data && data.reply) {
-            return data.reply;
-        }
-        // Si la respuesta es un JSON pero no tiene la estructura esperada
-        if(typeof data === 'object' && data !== null) {
-            return JSON.stringify(data);
-        }
-        // Fallback final
-        return "No se recibió una respuesta válida.";
+
+        // Fallback final para respuestas inesperadas.
+        return responseData || "No se recibió una respuesta válida.";
     };
 
     const handleFormSubmit = async (event) => {
