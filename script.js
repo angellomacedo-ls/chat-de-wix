@@ -120,8 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(n8nWebhookUrl, {
                 method: 'POST',
                 headers: {
-                    // Cambiado a text/plain para intentar evitar el preflight de CORS
-                    'Content-Type': 'text/plain'
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     message: userMessage,
