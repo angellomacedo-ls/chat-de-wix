@@ -1,10 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- INICIO DE LA MODIFICACIÓN ---
-
-    // Webhook de n8n para pruebas
     const n8nWebhookUrl = 'https://angellomacedo.app.n8n.cloud/webhook-test/7121dfe8-1a50-4c64-b1ea-90465e913322';
-
-    // --- FIN DE LA MODIFICACIÓN ---
     
     const widgetContainer = document.getElementById('chat-widget-container');
     const openChatBtn = document.getElementById('open-chat-btn');
@@ -82,12 +77,33 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const extractBotMessage = (responseData) => {
-        if (Array.isArray(responseData) && responseData.length > 0) {
-            return responseData[0].Respuesta || JSON.stringify(responseData[0]);
+        // Intenta parsear la respuesta si es un string JSON
+        let data = responseData;
+        if (typeof data === 'string') {
+            try {
+                data = JSON.parse(data);
+            } catch (e) {
+                // Si no es un JSON válido, devuelve el texto tal cual
+                return responseData;
+            }
         }
-        if (responseData && responseData.reply) {
-            return responseData.reply;
+
+        if (Array.isArray(data) && data.length > 0) {
+            // Busca la propiedad 'Respuesta' en el primer objeto del array
+            if(data[0].body && data[0].body.Respuesta) {
+                return data[0].body.Respuesta;
+            }
+            // Fallback a otras posibles estructuras
+            return data[0].Respuesta || JSON.stringify(data[0]);
         }
+        if (data && data.reply) {
+            return data.reply;
+        }
+        // Si la respuesta es un JSON pero no tiene la estructura esperada
+        if(typeof data === 'object' && data !== null) {
+            return JSON.stringify(data);
+        }
+        // Fallback final
         return "No se recibió una respuesta válida.";
     };
 
@@ -103,14 +119,21 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(n8nWebhookUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: userMessage, history: chatHistory.slice(-10) })
+                headers: {
+                    // Cambiado a text/plain para intentar evitar el preflight de CORS
+                    'Content-Type': 'text/plain'
+                },
+                body: JSON.stringify({
+                    message: userMessage,
+                    history: chatHistory.slice(-10) 
+                })
             });
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
+            // n8n puede devolver el JSON dentro de un campo 'data' o directamente
             const responseData = await response.json();
             const botMessage = extractBotMessage(responseData);
             addMessageToHistory(botMessage, MESSAGE_SENDER.BOT);
@@ -118,7 +141,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error al comunicar con el webhook:', error);
 
-            // Intentamos leer el cuerpo de la respuesta aunque haya un error
             if (error.response) {
                 error.response.text().then(text => {
                     console.error('Respuesta del servidor (texto):', text);
