@@ -129,11 +129,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            
-            // n8n puede devolver el JSON dentro de un campo 'data' o directamente
-            const responseData = await response.json();
-            const botMessage = extractBotMessage(responseData);
-            addMessageToHistory(botMessage, MESSAGE_SENDER.BOT);
+
+            // Si la respuesta es "204 No Content", no intentes leer el cuerpo.
+            if (response.status === 204) {
+                addMessageToHistory("El asistente recibió el mensaje, pero no generó una respuesta.", MESSAGE_SENDER.BOT);
+            } else {
+                const responseData = await response.json();
+                const botMessage = extractBotMessage(responseData);
+                addMessageToHistory(botMessage, MESSAGE_SENDER.BOT);
+            }
 
         } catch (error) {
             console.error('Error al comunicar con el webhook:', error);
