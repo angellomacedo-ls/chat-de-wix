@@ -12,8 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendButton = document.getElementById('send-button');
     const scrollToBottomBtn = document.getElementById('scroll-to-bottom-btn');
 
-    const MESSAGE_SENDER = { USER: 'user', BOT: 'bot' };
     let chatHistory = [];
+    let lastMessageDate = null;
 
     openChatBtn.addEventListener('click', () => widgetContainer.classList.add('open'));
     closeChatBtn.addEventListener('click', () => widgetContainer.classList.remove('open'));
@@ -46,11 +46,35 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/\*([^*]+)\*/g, '<em>$1</em>');
     };
 
+    const formatDateSeparator = (date) => {
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        if (date.toDateString() === today.toDateString()) {
+            return 'Hoy';
+        }
+        if (date.toDateString() === yesterday.toDateString()) {
+            return 'Ayer';
+        }
+        return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+    };
+
     const displayMessage = (message) => {
+        const messageDate = new Date(message.timestamp);
+        
+        if (!lastMessageDate || messageDate.toDateString() !== lastMessageDate.toDateString()) {
+            const dateSeparator = document.createElement('div');
+            dateSeparator.classList.add('date-separator');
+            dateSeparator.textContent = formatDateSeparator(messageDate);
+            messagesContainer.appendChild(dateSeparator);
+        }
+        lastMessageDate = messageDate;
+
         const isScrolledToBottom = messagesContainer.scrollHeight - messagesContainer.clientHeight <= messagesContainer.scrollTop + 1;
 
         const formattedText = markdownToHtml(message.text);
-        const time = new Date(message.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        const time = messageDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
         
         const messageContainer = document.createElement('li');
         messageContainer.classList.add('message-container', `${message.sender}-message-container`);
