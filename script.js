@@ -35,17 +35,29 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const displayMessage = (message) => {
+        const isScrolledToBottom = messagesContainer.scrollHeight - messagesContainer.clientHeight <= messagesContainer.scrollTop + 1;
+
         const formattedText = markdownToHtml(message.text);
         const time = new Date(message.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
         
         const messageContainer = document.createElement('li');
         messageContainer.classList.add('message-container', `${message.sender}-message-container`);
-        messageContainer.innerHTML = `
-            <div class="message ${message.sender}-message">${formattedText}</div>
-            <span class="timestamp">${time}</span>
-        `;
+
+        const messageBubble = document.createElement('div');
+        messageBubble.classList.add('message', `${message.sender}-message`);
+        messageBubble.innerHTML = formattedText; // innerHTML es seguro aquí porque markdownToHtml sanitiza el contenido.
+
+        const timestampSpan = document.createElement('span');
+        timestampSpan.classList.add('timestamp');
+        timestampSpan.textContent = time;
+
+        messageContainer.appendChild(messageBubble);
+        messageContainer.appendChild(timestampSpan);
         messagesContainer.appendChild(messageContainer);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        if (isScrolledToBottom) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
     };
 
     const saveChatHistory = () => {
