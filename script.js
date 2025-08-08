@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendButton = document.getElementById('send-button');
     const scrollToBottomBtn = document.getElementById('scroll-to-bottom-btn');
 
+    const MESSAGE_SENDER = { USER: 'user', BOT: 'bot' };
     let chatHistory = [];
     let lastMessageDate = null;
 
