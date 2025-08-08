@@ -10,12 +10,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const messagesContainer = document.getElementById('messages');
     const typingIndicator = document.getElementById('typing-indicator');
     const sendButton = document.getElementById('send-button');
+    const scrollToBottomBtn = document.getElementById('scroll-to-bottom-btn');
 
     const MESSAGE_SENDER = { USER: 'user', BOT: 'bot' };
     let chatHistory = [];
 
     openChatBtn.addEventListener('click', () => widgetContainer.classList.add('open'));
     closeChatBtn.addEventListener('click', () => widgetContainer.classList.remove('open'));
+
+    // Lógica para el botón de scroll
+    messagesContainer.addEventListener('scroll', () => {
+        const threshold = 200; // Píxeles desde el fondo para mostrar el botón
+        const isScrolledUp = messagesContainer.scrollHeight - messagesContainer.scrollTop > messagesContainer.clientHeight + threshold;
+        scrollToBottomBtn.classList.toggle('hidden', !isScrolledUp);
+    });
+
+    scrollToBottomBtn.addEventListener('click', () => {
+        messagesContainer.scrollTo({ top: messagesContainer.scrollHeight, behavior: 'smooth' });
+    });
 
     const setUILoadingState = (isLoading) => {
         sendButton.disabled = isLoading;

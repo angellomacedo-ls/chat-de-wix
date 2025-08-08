@@ -93,6 +93,44 @@
     gap: 4px; /* Espacio entre burbujas de mensaje */
 }
 
+#scroll-to-bottom-btn {
+    position: absolute;
+    bottom: 80px; /* Lo posiciona justo encima del formulario de mensaje */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #333;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+}
+
+#scroll-to-bottom-btn.hidden {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+    pointer-events: none;
+}
+
+#scroll-to-bottom-btn:not(.hidden) {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+}
+
+#scroll-to-bottom-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
 #message-form {
     display: flex;
     padding: 10px 20px;
