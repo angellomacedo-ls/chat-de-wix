@@ -64,8 +64,8 @@
 }
 
 #chat-title {
-    font-size: 1.25em; /* Ligeramente más pequeño para un look refinado */
-    font-weight: 600; /* Un poco más de peso */
+    font-size: 1.75em;
+    font-weight: 600;
 }
 
 #close-chat-btn {
@@ -106,7 +106,7 @@
     border: 1px solid var(--border-color);
     border-radius: 24px;
     padding: 14px 21px;
-    font-size: 1em; /* Tamaño de fuente estándar */
+    font-size: 1.39em;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 #message-input:focus {
@@ -168,7 +168,7 @@
     border-radius: var(--border-radius);
     word-wrap: break-word;
     line-height: 1.5;
-    font-size: 0.95rem;
+    font-size: 1.1rem;
 }
 
 .user-message {
