@@ -42,8 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const processMessageText = (text) => {
-        const markdownLinkRegex = /\\\[([\\^\\\\]+)\\\\]\\\\(([^)]+)\\\\)/g;
-        const urlRegex = /(\\b(https?:|ftp:|file:)\\\/\\/[-A-Z0-9+&@#\\/%?=~_|!:,.;]*[-A-Z0-9+&@#\\/%=~_|])(?![^<]*>|[^<>]*<\\\/a>)/ig;
+        const markdownLinkRegex = /\\\[([^\\]+)\\\)\\\(([^)]+)\\\\/g;
+        const urlRegex = /(\b(https?|ftp|file):\\/\\/[-A-Z0-9+&@#\\/%?=~_|!:,.;]*[-A-Z0-9+&@#\\/%=~_|])(?![^<]*>|[^<>]*<\\/a>)/ig;
 
         const processedText = text
             .replace(markdownLinkRegex, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
