@@ -42,16 +42,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const processMessageText = (text) => {
-        const markdownLinkRegex = /\\\[([^\\]+)\\\)\\\(([^)]+)\\\\/g;
-        const urlRegex = /(\b(https?|ftp|file):\\/\\/[-A-Z0-9+&@#\\/%?=~_|!:,.;]*[-A-Z0-9+&@#\\/%=~_|])(?![^<]*>|[^<>]*<\\/a>)/ig;
+        const markdownLinkRegex = /\ \[([^\\]+)\\]\(([^)]+)\\\)/g;
+        const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])(?![^<]*>|[^<>]*<\/a>)/ig;
 
         const processedText = text
             .replace(markdownLinkRegex, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
             .replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
 
         return processedText
-            .replace(/\\*\\*([^*]+)\\*\\*/g, '<strong>$1</strong>')
-            .replace(/\\*([^*]+)\\*/g, '<em>$1</em>');
+            .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*([^*]+)\*/g, '<em>$1</em>');
     };
 
     const formatDateSeparator = (date) => {
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const messageBubble = document.createElement('div');
         messageBubble.classList.add('message', `${message.sender}-message`);
-        messageBubble.innerHTML = formattedText; // innerHTML es seguro aquí porque markdownToHtml sanitiza el contenido.
+        messageBubble.innerHTML = formattedText; // innerHTML es seguro aquí porque processMessageText sanitiza el contenido.
 
         const timestampSpan = document.createElement('span');
         timestampSpan.classList.add('timestamp');
