@@ -42,12 +42,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const processMessageText = (text) => {
-        const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-        const linkedText = text.replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
+        const markdownLinkRegex = /\\\[([\\^\\\\]+)\\\\]\\\\(([^)]+)\\\\)/g;
+        const urlRegex = /(\\b(https?:|ftp:|file:)\\\/\\/[-A-Z0-9+&@#\\/%?=~_|!:,.;]*[-A-Z0-9+&@#\\/%=~_|])(?![^<]*>|[^<>]*<\\\/a>)/ig;
 
-        return linkedText
-            .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+        const processedText = text
+            .replace(markdownLinkRegex, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+            .replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
+
+        return processedText
+            .replace(/\\*\\*([^*]+)\\*\\*/g, '<strong>$1</strong>')
+            .replace(/\\*([^*]+)\\*/g, '<em>$1</em>');
     };
 
     const formatDateSeparator = (date) => {
