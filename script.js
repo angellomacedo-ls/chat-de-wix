@@ -41,8 +41,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const markdownToHtml = (text) => {
-        return text
+    const processMessageText = (text) => {
+        const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+        const linkedText = text.replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
+
+        return linkedText
             .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
             .replace(/\*([^*]+)\*/g, '<em>$1</em>');
     };
@@ -74,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const isScrolledToBottom = messagesContainer.scrollHeight - messagesContainer.clientHeight <= messagesContainer.scrollTop + 1;
 
-        const formattedText = markdownToHtml(message.text);
+        const formattedText = processMessageText(message.text);
         const time = messageDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
         
         const messageContainer = document.createElement('li');
