@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const processMessageText = (text) => {
-        const markdownLinkRegex = /\\[([^\\]+)\]\(([^)]+)\\\)/g;
+        const markdownLinkRegex = /\ \[([^\\]+)\]\(([^)]+)\\\)/g;
         const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%?=~_|])(?![^<]*>|[^<>]*<\/a>)/ig;
 
         const processedText = text
