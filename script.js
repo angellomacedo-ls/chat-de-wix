@@ -41,19 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const processMessageText = (text) => {
-        const markdownLinkRegex = /\*\[([^\]]+)\]\(([^)]+)\)\*/g;
-        const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%?=~_|])(?![^<]*>|[^<>]*<\/a>)/ig;
-
-        const processedText = text
-            .replace(markdownLinkRegex, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-            .replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
-
-        return processedText
-            .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*([^*]+)\*/g, '<em>$1</em>');
-    };
-
     const formatDateSeparator = (date) => {
         const today = new Date();
         const yesterday = new Date(today);
@@ -88,7 +75,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const messageBubble = document.createElement('div');
         messageBubble.classList.add('message', `${message.sender}-message`);
-        messageBubble.innerHTML = formattedText; // innerHTML es seguro aquí porque processMessageText sanitiza el contenido.
+
+        // Handle both structured JSON and plain text messages
+        if (Array.isArray(message.text)) {
+            message.text.forEach(part => {
+                if (part.type === 'text') {
+                    messageBubble.appendChild(document.createTextNode(part.content));
+                } else if (part.type === 'link' && part.url && part.text) {
+                    const link = document.createElement('a');
+                    link.href = part.url;
+                    link.textContent = part.text;
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    messageBubble.appendChild(link);
+                }
+            });
+        } else if (typeof message.text === 'string') {
+            // Fallback for plain text user messages
+            messageBubble.appendChild(document.createTextNode(message.text));
+        }
 
         const timestampSpan = document.createElement('span');
         timestampSpan.classList.add('timestamp');
@@ -116,7 +121,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const savedHistory = localStorage.getItem('chatHistory');
             if (savedHistory) {
                 chatHistory = JSON.parse(savedHistory);
-                chatHistory.forEach(displayMessage);
+                chatHistory.forEach(message => {
+                    try {
+                        displayMessage(message);
+                    } catch (e) {
+                        console.error("Could not display message:", message, e);
+                    }
+                });
             }
         } catch (e) {
             console.error("Could not load chat history:", e);
@@ -132,32 +143,20 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const extractBotMessage = (responseData) => {
-        // Prioridad 1: Buscar una propiedad 'reply' o 'text' o 'output' en el objeto principal.
+        if (responseData && responseData.reply && Array.isArray(responseData.reply)) {
+            return responseData.reply;
+        }
+        // Fallback for simple text responses
         if (responseData && typeof responseData === 'object') {
-            if (responseData.reply) return responseData.reply;
-            if (responseData.text) return responseData.text;
-            if (responseData.output) return responseData.output;
+            if (responseData.reply) return [{ type: 'text', content: responseData.reply }];
+            if (responseData.text) return [{ type: 'text', content: responseData.text }];
+            if (responseData.output) return [{ type: 'text', content: responseData.output }];
         }
-
-        // Prioridad 2: Si es un array, buscar en el primer elemento.
-        if (Array.isArray(responseData) && responseData.length > 0) {
-            const firstItem = responseData[0];
-            if (firstItem && typeof firstItem === 'object') {
-                if (firstItem.reply) return firstItem.reply;
-                if (firstItem.text) return firstItem.text;
-                if (firstItem.output) return firstItem.output;
-                if (firstItem.Respuesta) return firstItem.Respuesta; // Para compatibilidad con versiones anteriores
-                if (firstItem.body && firstItem.body.Respuesta) return firstItem.body.Respuesta; // Para compatibilidad
-            }
+        if(typeof responseData === 'string') {
+            return [{ type: 'text', content: responseData }];
         }
-
-        // Si todo lo demás falla, convierte la respuesta a un string para depuración.
-        if (typeof responseData === 'object') {
-            return JSON.stringify(responseData);
-        }
-
-        // Fallback final para respuestas inesperadas.
-        return responseData || "No se recibió una respuesta válida.";
+        // Fallback for unexpected responses
+        return [{ type: 'text', content: "No se recibió una respuesta válida." }];
     };
 
     const handleFormSubmit = async (event) => {
@@ -187,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Si la respuesta es "204 No Content", no intentes leer el cuerpo.
             if (response.status === 204) {
-                addMessageToHistory("El asistente recibió el mensaje, pero no generó una respuesta.", MESSAGE_SENDER.BOT);
+                addMessageToHistory([{ type: 'text', content: "El asistente recibió el mensaje, pero no generó una respuesta." }], MESSAGE_SENDER.BOT);
             } else {
                 const responseData = await response.json();
                 const botMessage = extractBotMessage(responseData);
@@ -204,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             const errorMessage = 'Lo siento, no pude conectarme con el asistente en este momento. Por favor, inténtalo de nuevo más tarde.';
-            addMessageToHistory(errorMessage, MESSAGE_SENDER.BOT);
+            addMessageToHistory([{ type: 'text', content: errorMessage }], MESSAGE_SENDER.BOT);
         } finally {
             setUILoadingState(false);
         }
