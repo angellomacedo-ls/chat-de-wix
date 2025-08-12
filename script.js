@@ -81,7 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const isScrolledToBottom = messagesContainer.scrollHeight - messagesContainer.clientHeight <= messagesContainer.scrollTop + 1;
 
-        const formattedText = processMessageText(message.text);
         const time = messageDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
         
         const messageContainer = document.createElement('li');
