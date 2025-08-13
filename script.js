@@ -160,15 +160,20 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const handleFormSubmit = async (event) => {
+        console.log("Paso 1: El formulario fue enviado.");
         event.preventDefault();
         const userMessage = messageInputField.value.trim();
-        if (!userMessage) return;
+        if (!userMessage) {
+            console.log("Paso 1a: Mensaje vacío, deteniendo.");
+            return;
+        }
 
         addMessageToHistory(userMessage, MESSAGE_SENDER.USER);
         messageInputField.value = '';
         setUILoadingState(true);
 
         try {
+            console.log("Paso 2: Intentando llamar a fetch...");
             const response = await fetch(n8nWebhookUrl, {
                 method: 'POST',
                 headers: {
@@ -179,36 +184,32 @@ document.addEventListener('DOMContentLoaded', () => {
                     history: chatHistory.slice(-10) 
                 })
             });
+            console.log("Paso 3: Fetch completado. Estado:", response.status);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             if (response.status === 204) {
+                console.log("Paso 4a: La respuesta es 204 No Content.");
                 addMessageToHistory([{ type: 'text', content: "El asistente recibió el mensaje, pero no generó una respuesta." }], MESSAGE_SENDER.BOT);
             } else {
+                console.log("Paso 4b: La respuesta tiene contenido, leyendo texto...");
                 const responseText = await response.text();
                 console.log("Respuesta EXACTA recibida de n8n:", responseText);
                 let botMessage;
                 try {
-                    // Intentar procesar como JSON primero
                     const responseData = JSON.parse(responseText);
                     botMessage = extractBotMessage(responseData);
                 } catch (e) {
-                    // Si falla el JSON, tratarlo como texto plano
                     botMessage = extractBotMessage(responseText);
                 }
                 addMessageToHistory(botMessage, MESSAGE_SENDER.BOT);
             }
 
         } catch (error) {
+            console.log("Paso 5: Se ha producido un error.", error);
             console.error('Error al comunicar con el webhook:', error);
-
-            if (error.response) {
-                error.response.text().then(text => {
-                    console.error('Respuesta del servidor (texto):', text);
-                });
-            }
             
             const errorMessage = 'Lo siento, no pude conectarme con el asistente en este momento. Por favor, inténtalo de nuevo más tarde.';
             addMessageToHistory([{ type: 'text', content: errorMessage }], MESSAGE_SENDER.BOT);
