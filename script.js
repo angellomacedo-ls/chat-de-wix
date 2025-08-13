@@ -184,12 +184,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            // Si la respuesta es "204 No Content", no intentes leer el cuerpo.
             if (response.status === 204) {
                 addMessageToHistory([{ type: 'text', content: "El asistente recibió el mensaje, pero no generó una respuesta." }], MESSAGE_SENDER.BOT);
             } else {
-                const responseData = await response.json();
-                const botMessage = extractBotMessage(responseData);
+                const responseText = await response.text();
+                let botMessage;
+                try {
+                    // Intentar procesar como JSON primero
+                    const responseData = JSON.parse(responseText);
+                    botMessage = extractBotMessage(responseData);
+                } catch (e) {
+                    // Si falla el JSON, tratarlo como texto plano
+                    botMessage = extractBotMessage(responseText);
+                }
                 addMessageToHistory(botMessage, MESSAGE_SENDER.BOT);
             }
 
