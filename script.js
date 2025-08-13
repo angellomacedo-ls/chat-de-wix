@@ -50,6 +50,30 @@ document.addEventListener('DOMContentLoaded', () => {
         return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
     };
 
+    const linkify = (text) => {
+        const fragment = document.createDocumentFragment();
+        const urlRegex = /((?:https?:\/\/|www\.)[^\s\/$.?#].[^\s]*|[a-zA-Z0-9-]+\.[a-zA-Z]{2,})\b/g;
+        const parts = text.split(urlRegex);
+
+        for (const part of parts) {
+            if (part && part.match(urlRegex)) {
+                const a = document.createElement('a');
+                let href = part;
+                if (!href.startsWith('http://') && !href.startsWith('https://')) {
+                    href = '//' + href;
+                }
+                a.href = href;
+                a.textContent = part;
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                fragment.appendChild(a);
+            } else if (part) {
+                fragment.appendChild(document.createTextNode(part));
+            }
+        }
+        return fragment;
+    };
+
     const displayMessage = (message) => {
         const messageDate = new Date(message.timestamp);
         
@@ -74,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (Array.isArray(message.text)) {
             message.text.forEach(part => {
                 if (part.type === 'text' && part.content) {
-                    messageBubble.appendChild(document.createTextNode(part.content));
+                    messageBubble.appendChild(linkify(part.content));
                 } else if (part.type === 'link' && part.url && part.text) {
                     const link = document.createElement('a');
                     link.href = part.url;
@@ -85,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         } else if (typeof message.text === 'string') {
-            messageBubble.appendChild(document.createTextNode(message.text));
+            messageBubble.appendChild(linkify(message.text));
         }
 
         const timestampSpan = document.createElement('span');
@@ -136,29 +160,24 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const extractBotMessage = (responseData) => {
-        // Handles the specific format from n8n: [{"Respuesta": "..."}]
         if (Array.isArray(responseData) && responseData.length > 0 && responseData[0].Respuesta) {
             return [{ type: 'text', content: responseData[0].Respuesta }];
         }
 
-        // Handles the format for links: {"reply": [...]}
         if (responseData && responseData.reply && Array.isArray(responseData.reply)) {
             return responseData.reply;
         }
         
-        // Handles simple objects: {"text": "..."} or {"output": "..."}
         if (responseData && typeof responseData === 'object' && responseData !== null) {
             const text = responseData.reply || responseData.text || responseData.output;
             if (text) return [{ type: 'text', content: text }];
         }
 
-        // Handles a plain string response
         if(typeof responseData === 'string') {
-            return [{ type: 'text', content: responseData }];
+            return responseData;
         }
 
-        // Fallback for any other unexpected format
-        return [{ type: 'text', content: "No se recibió una respuesta válida." }];
+        return "No se recibió una respuesta válida.";
     };
 
     const handleFormSubmit = async (event) => {
@@ -187,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (response.status === 204) {
-                addMessageToHistory([{ type: 'text', content: "El asistente recibió el mensaje, pero no generó una respuesta." }], MESSAGE_SENDER.BOT);
+                addMessageToHistory("El asistente recibió el mensaje, pero no generó una respuesta.", MESSAGE_SENDER.BOT);
             } else {
                 const responseText = await response.text();
                 let botMessage;
@@ -203,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error al comunicar con el webhook:', error);
             const errorMessage = 'Lo siento, no pude conectarme con el asistente en este momento. Por favor, inténtalo de nuevo más tarde.';
-            addMessageToHistory([{ type: 'text', content: errorMessage }], MESSAGE_SENDER.BOT);
+            addMessageToHistory(errorMessage, MESSAGE_SENDER.BOT);
         } finally {
             setUILoadingState(false);
         }
