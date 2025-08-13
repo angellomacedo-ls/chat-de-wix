@@ -19,8 +19,9 @@ document.addEventListener('DOMContentLoaded', () => {
     openChatBtn.addEventListener('click', () => widgetContainer.classList.add('open'));
     closeChatBtn.addEventListener('click', () => widgetContainer.classList.remove('open'));
 
+    // Lógica para el botón de scroll
     messagesContainer.addEventListener('scroll', () => {
-        const threshold = 200;
+        const threshold = 200; // Píxeles desde el fondo para mostrar el botón
         const isScrolledUp = messagesContainer.scrollHeight - messagesContainer.scrollTop > messagesContainer.clientHeight + threshold;
         scrollToBottomBtn.classList.toggle('hidden', !isScrolledUp);
     });
@@ -32,8 +33,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const setUILoadingState = (isLoading) => {
         sendButton.disabled = isLoading;
         typingIndicator.classList.toggle('hidden', !isLoading);
-        messageInputField.disabled = isLoading;
-        if (!isLoading) {
+        if(isLoading) {
+            messageInputField.disabled = true;
+        } else {
+            messageInputField.disabled = false;
             messageInputField.focus();
         }
     };
@@ -43,30 +46,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const yesterday = new Date(today);
         yesterday.setDate(yesterday.getDate() - 1);
 
-        if (date.toDateString() === today.toDateString()) return 'Hoy';
-        if (date.toDateString() === yesterday.toDateString()) return 'Ayer';
+        if (date.toDateString() === today.toDateString()) {
+            return 'Hoy';
+        }
+        if (date.toDateString() === yesterday.toDateString()) {
+            return 'Ayer';
+        }
         return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
     };
 
     const displayMessage = (message) => {
-        if (!message || !message.text || !message.sender || !message.timestamp) {
-            console.error("Invalid message object:", message);
-            return; 
-        }
-
         const messageDate = new Date(message.timestamp);
-        if (isNaN(messageDate.getTime())) {
-            console.error("Invalid timestamp for message:", message);
-            return;
-        }
-
+        
         if (!lastMessageDate || messageDate.toDateString() !== lastMessageDate.toDateString()) {
             const dateSeparator = document.createElement('div');
             dateSeparator.classList.add('date-separator');
             dateSeparator.textContent = formatDateSeparator(messageDate);
             messagesContainer.appendChild(dateSeparator);
-            lastMessageDate = messageDate;
         }
+        lastMessageDate = messageDate;
 
         const isScrolledToBottom = messagesContainer.scrollHeight - messagesContainer.clientHeight <= messagesContainer.scrollTop + 1;
 
@@ -78,9 +76,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const messageBubble = document.createElement('div');
         messageBubble.classList.add('message', `${message.sender}-message`);
 
+        // Handle both structured JSON and plain text messages
         if (Array.isArray(message.text)) {
             message.text.forEach(part => {
-                if (part.type === 'text' && part.content) {
+                if (part.type === 'text') {
                     messageBubble.appendChild(document.createTextNode(part.content));
                 } else if (part.type === 'link' && part.url && part.text) {
                     const link = document.createElement('a');
@@ -92,6 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         } else if (typeof message.text === 'string') {
+            // Fallback for plain text user messages
             messageBubble.appendChild(document.createTextNode(message.text));
         }
 
@@ -117,20 +117,20 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     const loadChatHistory = () => {
-        const savedHistory = localStorage.getItem('chatHistory');
-        if (!savedHistory) return;
-
         try {
-            const parsedHistory = JSON.parse(savedHistory);
-            if (Array.isArray(parsedHistory)) {
-                chatHistory = parsedHistory;
-                messagesContainer.innerHTML = ''; // Clear previous messages
-                lastMessageDate = null;
-                chatHistory.forEach(displayMessage);
+            const savedHistory = localStorage.getItem('chatHistory');
+            if (savedHistory) {
+                chatHistory = JSON.parse(savedHistory);
+                chatHistory.forEach(message => {
+                    try {
+                        displayMessage(message);
+                    } catch (e) {
+                        console.error("Could not display message:", message, e);
+                    }
+                });
             }
         } catch (e) {
-            console.error("Could not load or parse chat history, clearing it.", e);
-            localStorage.removeItem('chatHistory');
+            console.error("Could not load chat history:", e);
             chatHistory = [];
         }
     };
@@ -143,16 +143,20 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const extractBotMessage = (responseData) => {
-        if (responseData?.reply && Array.isArray(responseData.reply)) {
+        if (responseData && responseData.reply && Array.isArray(responseData.reply)) {
             return responseData.reply;
         }
-        let content = "No se recibió una respuesta válida.";
-        if (typeof responseData === 'string') {
-            content = responseData;
-        } else if (typeof responseData === 'object' && responseData !== null) {
-            content = responseData.reply || responseData.text || responseData.output || JSON.stringify(responseData);
+        // Fallback for simple text responses
+        if (responseData && typeof responseData === 'object') {
+            if (responseData.reply) return [{ type: 'text', content: responseData.reply }];
+            if (responseData.text) return [{ type: 'text', content: responseData.text }];
+            if (responseData.output) return [{ type: 'text', content: responseData.output }];
         }
-        return [{ type: 'text', content }];
+        if(typeof responseData === 'string') {
+            return [{ type: 'text', content: responseData }];
+        }
+        // Fallback for unexpected responses
+        return [{ type: 'text', content: "No se recibió una respuesta válida." }];
     };
 
     const handleFormSubmit = async (event) => {
@@ -167,7 +171,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(n8nWebhookUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({
                     message: userMessage,
                     history: chatHistory.slice(-10) 
@@ -178,6 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
+            // Si la respuesta es "204 No Content", no intentes leer el cuerpo.
             if (response.status === 204) {
                 addMessageToHistory([{ type: 'text', content: "El asistente recibió el mensaje, pero no generó una respuesta." }], MESSAGE_SENDER.BOT);
             } else {
@@ -188,6 +195,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('Error al comunicar con el webhook:', error);
+
+            if (error.response) {
+                error.response.text().then(text => {
+                    console.error('Respuesta del servidor (texto):', text);
+                });
+            }
+            
             const errorMessage = 'Lo siento, no pude conectarme con el asistente en este momento. Por favor, inténtalo de nuevo más tarde.';
             addMessageToHistory([{ type: 'text', content: errorMessage }], MESSAGE_SENDER.BOT);
         } finally {
