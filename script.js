@@ -188,6 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 addMessageToHistory([{ type: 'text', content: "El asistente recibió el mensaje, pero no generó una respuesta." }], MESSAGE_SENDER.BOT);
             } else {
                 const responseText = await response.text();
+                console.log("Respuesta EXACTA recibida de n8n:", responseText);
                 let botMessage;
                 try {
                     // Intentar procesar como JSON primero
