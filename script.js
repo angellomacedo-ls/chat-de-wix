@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const n8nWebhookUrl = 'http://localhost:5678/webhook/7121dfe8-1a50-4c64-b1ea-90465e913322';
+    const n8nWebhookUrl = 'https://angellomacedo.app.n8n.cloud/webhook/7121dfe8-1a50-4c64-b1ea-90465e913322';
     
     const widgetContainer = document.getElementById('chat-widget-container');
     const openChatBtn = document.getElementById('open-chat-btn');
@@ -16,7 +16,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let chatHistory = [];
     let lastMessageDate = null;
 
-    openChatBtn.addEventListener('click', () => widgetContainer.classList.add('open'));
+    const openChat = () => {
+        widgetContainer.classList.add('open');
+        messageInputField.focus();
+        if (chatHistory.length === 0) {
+            showWelcomeMessage();
+        }
+    };
+
+    openChatBtn.addEventListener('click', openChat);
     closeChatBtn.addEventListener('click', () => widgetContainer.classList.remove('open'));
 
     messagesContainer.addEventListener('scroll', () => {
@@ -32,10 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const setUILoadingState = (isLoading) => {
         sendButton.disabled = isLoading;
         typingIndicator.classList.toggle('hidden', !isLoading);
-        if(isLoading) {
-            messageInputField.disabled = true;
-        } else {
-            messageInputField.disabled = false;
+        messageInputField.disabled = isLoading;
+        if (!isLoading) {
             messageInputField.focus();
         }
     };
@@ -127,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const saveChatHistory = () => {
         try {
-            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+            sessionStorage.setItem('chatHistory', JSON.stringify(chatHistory));
         } catch (e) {
             console.error("Could not save chat history:", e);
         }
@@ -135,16 +141,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const loadChatHistory = () => {
         try {
-            const savedHistory = localStorage.getItem('chatHistory');
+            const savedHistory = sessionStorage.getItem('chatHistory');
             if (savedHistory) {
                 chatHistory = JSON.parse(savedHistory);
-                chatHistory.forEach(message => {
-                    try {
-                        displayMessage(message);
-                    } catch (e) {
-                        console.error("Could not display message:", message, e);
-                    }
-                });
+                lastMessageDate = null; // Reset last message date
+                messagesContainer.innerHTML = ''; // Clear existing messages
+                chatHistory.forEach(displayMessage);
             }
         } catch (e) {
             console.error("Could not load chat history:", e);
@@ -159,25 +161,30 @@ document.addEventListener('DOMContentLoaded', () => {
         displayMessage(message);
     };
 
+    const showWelcomeMessage = () => {
+        addMessageToHistory("¡Hola! Soy tu Asistente Virtual. ¿En qué puedo ayudarte hoy?", MESSAGE_SENDER.BOT);
+    };
+
     const extractBotMessage = (responseData) => {
         if (Array.isArray(responseData) && responseData.length > 0 && responseData[0].Respuesta) {
             return [{ type: 'text', content: responseData[0].Respuesta }];
         }
-
         if (responseData && responseData.reply && Array.isArray(responseData.reply)) {
             return responseData.reply;
         }
-        
         if (responseData && typeof responseData === 'object' && responseData !== null) {
             const text = responseData.reply || responseData.text || responseData.output;
             if (text) return [{ type: 'text', content: text }];
         }
-
         if(typeof responseData === 'string') {
-            return responseData;
+            try {
+                const parsed = JSON.parse(responseData);
+                return extractBotMessage(parsed);
+            } catch(e) {
+                return [{ type: 'text', content: responseData }];
+            }
         }
-
-        return "No se recibió una respuesta válida.";
+        return [{ type: 'text', content: "No se recibió una respuesta válida." }];
     };
 
     const handleFormSubmit = async (event) => {
@@ -192,36 +199,26 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(n8nWebhookUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: userMessage,
                     history: chatHistory.slice(-10) 
                 })
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
             if (response.status === 204) {
-                addMessageToHistory("El asistente recibió el mensaje, pero no generó una respuesta.", MESSAGE_SENDER.BOT);
+                 addMessageToHistory("El asistente no generó una respuesta.", MESSAGE_SENDER.BOT);
             } else {
-                const responseText = await response.text();
-                let botMessage;
-                try {
-                    const responseData = JSON.parse(responseText);
-                    botMessage = extractBotMessage(responseData);
-                } catch (e) {
-                    botMessage = extractBotMessage(responseText);
-                }
+                const responseData = await response.json();
+                const botMessage = extractBotMessage(responseData);
                 addMessageToHistory(botMessage, MESSAGE_SENDER.BOT);
             }
 
         } catch (error) {
             console.error('Error al comunicar con el webhook:', error);
-            const errorMessage = 'Lo siento, no pude conectarme con el asistente en este momento. Por favor, inténtalo de nuevo más tarde.';
+            const errorMessage = 'Lo siento, no pude conectarme con el asistente. Por favor, inténtalo de nuevo.';
             addMessageToHistory(errorMessage, MESSAGE_SENDER.BOT);
         } finally {
             setUILoadingState(false);

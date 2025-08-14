@@ -1,18 +1,19 @@
+
 :root {
     --font-family: 'Inter', sans-serif;
     --primary-color: #0102f6;
-    --primary-hover-color: #0002d1; /* Un azul un poco más oscuro para el hover */
-    --secondary-color: #fbcb40; /* Amarillo para acentos */
-    --error-color: #ff0600; /* Rojo para errores */
+    --primary-hover-color: #0002d1;
+    --error-color: #ff0600;
+    --secondary-color: #fbcb40;
     
     --chat-background: #ffffff;
     --user-message-bg: var(--primary-color);
-    --bot-message-bg: #f0f2f5; /* Un gris más suave, estándar en chats modernos */
+    --bot-message-bg: #f0f2f5;
     --text-color-light: #ffffff;
-    --text-color-dark: #050505; /* Negro casi puro para máxima legibilidad */
+    --text-color-dark: #050505;
     --border-color: #e5e5e5;
-    --border-radius: 18px; /* Un poco más redondeado */
-    --widget-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    --border-radius: 20px;
+    --widget-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 #chat-widget-container * {
@@ -64,7 +65,7 @@
 }
 
 #chat-title {
-    font-size: 1.75em;
+    font-size: 1.2em;
     font-weight: 600;
 }
 
@@ -75,10 +76,11 @@
     font-size: 24px;
     cursor: pointer;
     opacity: 0.8;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s, color 0.2s;
 }
 #close-chat-btn:hover {
     opacity: 1;
+    color: var(--error-color);
 }
 
 #messages {
@@ -90,12 +92,30 @@
     scroll-behavior: smooth;
     display: flex;
     flex-direction: column;
-    gap: 4px; /* Espacio entre burbujas de mensaje */
+    gap: 4px;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.96)), url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAAH0CAYAAADL1t+KAAAAAXNSR0IArs4c6QAAIABJREFUeF7svQmYXUd9J/qrOtvdele3dlmSLS8YG4PZbGMjY5YAMSQsTshGgHwhIRky2d68l/eSx0wm3+SbmZdk8kIYBggDE0JwElazBgwGgxdsvCJsy7J2qfftrmereu9fVef26VbLbtmS+t7uOv7a3br3LFW/U1W/+u8M9rAIWAQ6CoGem44NsXTrQKGCYT/AFreIbcUAuxwfF7nANgFcwFL0CoC3GoCQQJKYn1j/TlNACKBWTdt9cxwHrgt4nv5xXCDwAe5Af+4vfEf/5hzHPA8HRIonU4GDrRYO1eo4VpvHRF1gvPolNtlRwNnGWATWOQJsnfffdt8icF4R2POKv9vNnb4L4rS4SzjsouFNlSsSsEtbUXFLmPSUJqYcJBhAnASQThEpsbPDACcB5wmYjAGZwIGEJCaWHiRcQHJIKSEldUf/TZ9x7qr+6c/V/8AY0z88RZqEABL9OafvBVhuVUiSRJ3LuaN+q3sLBiEEHFnDjiGJoX4pkmjqeLHsPjE7OfpQEjUfY6J+gBcaB37ylV87fF4Btg+zCKxjBCyhr+OXb7t+9hG44IZP7krQv8vl/bvDxNvT2z/y/EK5/wWztebWaq2Jaj2G71eQwoEHDidugkkOwQoIYxduqR9hDAjuQCj+JJKVYEggZQL6kM53JInVJI23iGOJjhXZKtKV9Nsxn5k+Sg4woYleETwRvoBLojr05xJampcyNedJcK5uDsbot/6b7p8dnKWIW/Mo9ThI0iaSMELBcyFFBI/HKBaBgV4fpUJhPGyEP2rVWg9HYf3xZjx3UNQnnpx+9B1Hz/5bsHe0CKxPBCyhr8/3bnv9nBCQ7IWv+ocd9TR5XqtUucLvHbqm4G/YOzfL+qcnJVqtAoJgA+CUEEYCfilAsxXD8T2kpB9vteAPFBFNNRC4BchIwPNdBGWAruclBscHYkFcmwCMJGg9VXnqQApX8TzxquvR70RJzfow0jmdL0mSzkvlRMzmVvpjpZ7XhK2YWm8IGEnp9IE5qS3h0x4gew7T30qAlZTSAIgjeGUfcQta50+NjKrgPofLXIhEqrZ7jgvGScswjqHyOAZ7orEkrn+vUZ+6x0X9UcRTDz/+/X934jm9InuxRWAdImAJfR2+dNvllSOw86qP97fc/msK/VtfUOjdeK0b9L1qptosHz8xjqBYRppweF4RMiWp1EeaenC9ImIhkKYkUQs45QLSqAU4RsolVXm9Cae/BBlqvk6JvOkgwZpOIwO4iAFXAlyAKUJncIQLGEInbk1TAclTI0GbeygJXU9tJbAv8HK745laXZrntonenJF9T7yc/Z1xfPZvrUHQNnyQMb8QkLCvNhJegSOOJXyPIUli1R0IDpBmgc5nApy1IOJJbBzqQ7VaVVoBTip/JCh4wAXbhmut+sQdrebYXWH12APcm7rryJ3vm1n527NnWgTWFwKW0NfX+7a9fQYELr3mw1cId+CVhb4LXu8Xtrzhsaem4QQjSJ0e1OoxEJQAZZdWrAQkAlw68DhDZARpJeR6WkglwiNnszhO6X/GC41s24BokPQtwXwPMibiNiRMvJcCbgAkEdm4hWZlYlBJ0rlrCH6R9jsnaS/uZEboeWJv28mXkP1S7s/b09VdSTNgfvQD9U+BpHQJhPNNeJWikvwlMb2I9I7ApY0OU11JYgOfQ3b7FDIMgZQBQVE556Ux4JM5IaK/51AKUhS8OiBmsHN7BdXaiduajcmvF+Kx25/83m/ss4PaImAR0AhYQrcjYd0icMl1H+upBhfuLQ/ueo3Di28fHZ3ZFKdE1j4EPKUuL5Z60GglkCkDD0rKAY0s2ogA7muBOk1TMOEoKZsISRipVmmdfUDMh3AHAvVda7YFFAp6P8AF4JPBnFzTAadYQTrXBCsWtQo7leAeMwRqSB2Otm...');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 70%;
+}
+
+#messages::-webkit-scrollbar {
+    width: 6px;
+}
+#messages::-webkit-scrollbar-track {
+    background: transparent;
+}
+#messages::-webkit-scrollbar-thumb {
+    background: #d1d1d1;
+    border-radius: 3px;
+}
+#messages::-webkit-scrollbar-thumb:hover {
+    background: #b3b3b3;
 }
 
 #scroll-to-bottom-btn {
     position: absolute;
-    bottom: 80px; /* Lo posiciona justo encima del formulario de mensaje */
+    bottom: 80px;
     left: 50%;
     transform: translateX(-50%);
     width: 40px;
@@ -144,19 +164,19 @@
     border: 1px solid var(--border-color);
     border-radius: 24px;
     padding: 14px 21px;
-    font-size: 1.39em;
+    font-size: 1em;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 #message-input:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px var(--primary-color-opaco, rgba(1, 2, 246, 0.2));
+    box-shadow: 0 0 0 3px rgba(1, 2, 246, 0.2);
 }
 
 #send-button {
     border: none;
-    background-color: transparent;
-    color: var(--primary-color);
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
     width: 48px;
     height: 48px;
     border-radius: 50%;
@@ -168,15 +188,15 @@
     transition: background-color 0.2s, transform 0.1s;
 }
 #send-button:hover {
-    background-color: #f0f2f5;
+    background-color: var(--primary-hover-color);
 }
 #send-button:active {
     transform: scale(0.9);
 }
 #send-button:disabled {
-    color: #9e9e9e;
+    background-color: #d1d5db;
+    color: #9ca3af;
     cursor: not-allowed;
-    background-color: transparent;
 }
 
 #send-button svg {
@@ -187,7 +207,7 @@
 .message-container {
     display: flex;
     flex-direction: column;
-    max-width: 90%;
+    max-width: 85%;
     opacity: 0;
     transform: translateY(10px);
     animation: slideIn 0.3s forwards;
@@ -206,7 +226,17 @@
     border-radius: var(--border-radius);
     word-wrap: break-word;
     line-height: 1.5;
-    font-size: 0.91rem;
+    font-size: 0.95rem;
+}
+
+.message a {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+.user-message a {
+    color: var(--text-color-light);
+    font-weight: 600;
 }
 
 .user-message {
@@ -222,7 +252,7 @@
 
 .timestamp {
     font-size: 0.7rem;
-    color: #65676b; /* Un gris más oscuro para mejor contraste */
+    color: #65676b;
     margin: 4px 10px 0;
 }
 
@@ -245,6 +275,9 @@
     transform: translateY(10px);
     animation: slideIn 0.3s forwards;
 }
+#typing-indicator.hidden {
+    display: none !important;
+}
 #typing-indicator .dot {
     width: 8px;
     height: 8px;
@@ -255,8 +288,6 @@
 }
 #typing-indicator .dot:nth-child(2) { animation-delay: -0.8s; }
 #typing-indicator .dot:nth-child(3) { animation-delay: -0.4s; }
-
-.hidden { display: none !important; }
 
 @keyframes bounce {
     0%, 80%, 100% { transform: scale(0); }
