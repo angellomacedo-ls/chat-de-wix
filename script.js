@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const n8nWebhookUrl = 'https://c63f71bb8ec5.ngrok-free.app/webhook/7121dfe8-1a50-4c64-b1ea-90465e913322';
+    const n8nWebhookUrl = 'https://dff1b75fff14.ngrok-free.app/webhook/7121dfe8-1a50-4c64-b1ea-90465e913322';
     
     const widgetContainer = document.getElementById('chat-widget-container');
     const openChatBtn = document.getElementById('open-chat-btn');
